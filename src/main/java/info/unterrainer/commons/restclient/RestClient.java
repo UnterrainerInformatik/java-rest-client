@@ -5,7 +5,6 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import info.unterrainer.commons.serialization.JsonMapper;
-import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Call;
@@ -19,7 +18,6 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 @Slf4j
-@RequiredArgsConstructor
 @Accessors(fluent = true)
 public class RestClient {
 
@@ -27,6 +25,15 @@ public class RestClient {
 
 	protected OkHttpClient client;
 	protected final JsonMapper jsonMapper;
+
+	public RestClient(final JsonMapper jsonMapper) {
+		this(jsonMapper, null, null, 10000L, 10000L, 10000L);
+	}
+
+	public RestClient(final JsonMapper jsonMapper, final Long connectTimeoutInMillis, final Long readTimeoutInMillis,
+			final Long writeTimeoutInMillis) {
+		this(jsonMapper, null, null, connectTimeoutInMillis, readTimeoutInMillis, writeTimeoutInMillis);
+	}
 
 	public RestClient(final JsonMapper jsonMapper, final String userName, final String password) {
 		this(jsonMapper, userName, password, 10000L, 10000L, 10000L);
@@ -77,7 +84,7 @@ public class RestClient {
 
 	public <T> T post(final String url, final Class<T> targetJson, final StringParam headers, final String mediaType,
 			final String body) throws IOException {
-		String r = call("POST", url, headers);
+		String r = call("POST", url, headers, mediaType, body);
 		if (r == null)
 			return null;
 		return jsonMapper.fromStringTo(targetJson, r);
