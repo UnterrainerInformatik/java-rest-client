@@ -29,11 +29,17 @@ public class RestClient {
 	protected final JsonMapper jsonMapper;
 
 	public RestClient(final JsonMapper jsonMapper, final String userName, final String password) {
+		this(jsonMapper, userName, password, 10000L, 10000L, 10000L);
+	}
+
+	public RestClient(final JsonMapper jsonMapper, final String userName, final String password,
+			final Long connectTimeoutInMillis, final Long readTimeoutInMillis, final Long writeTimeoutInMillis) {
 		super();
 		this.jsonMapper = jsonMapper;
-		okhttp3.OkHttpClient.Builder c = new OkHttpClient.Builder().connectTimeout(10000, TimeUnit.MILLISECONDS)
-				.readTimeout(10000, TimeUnit.MILLISECONDS)
-				.writeTimeout(10000, TimeUnit.MILLISECONDS)
+		okhttp3.OkHttpClient.Builder c = new OkHttpClient.Builder()
+				.connectTimeout(connectTimeoutInMillis, TimeUnit.MILLISECONDS)
+				.readTimeout(readTimeoutInMillis, TimeUnit.MILLISECONDS)
+				.writeTimeout(writeTimeoutInMillis, TimeUnit.MILLISECONDS)
 				.followRedirects(true);
 		if (userName != null || password != null)
 			c.authenticator((route, response) -> {
