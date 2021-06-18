@@ -1,6 +1,5 @@
 package info.unterrainer.commons.restclient;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
@@ -25,12 +24,12 @@ public class KeycloakContext {
 	@Getter
 	private Long refreshTimestamp;
 
-	public <T> GetBuilder<T> get(final RestClient client) {
-		return new GetBuilder<>(client, this);
+	public <T> GetKeycloakBuilder<T> get(final RestClient client, final Class<?> type) {
+		return new GetKeycloakBuilder<>(client, type, this);
 	}
 
-	public <T> PostBuilder<T> post(final RestClient client) {
-		return new PostBuilder<>(client, this);
+	public <T> PostKeycloakBuilder<T> post(final RestClient client, final Class<?> type) {
+		return new PostKeycloakBuilder<>(client, type, this);
 	}
 
 	void update(final RestClient client) {
@@ -73,17 +72,17 @@ public class KeycloakContext {
 			log.debug("body: [{}]", body);
 
 			TokenResponseJson response = null;
-			try {
-				response = client.post(keycloakUrl, TokenResponseJson.class,
-						StringParam.builder()
-								.parameter("Content-Type", "application/x-www-form-urlencoded")
-								.parameter("Accept", "application/json")
-								.build(),
-						"application/x-www-form-urlencoded", body);
-			} catch (IOException e) {
-				log.error("Error getting tokens from keycloak.");
+			response = client.<TokenResponseJson>post(TokenResponseJson.class)
+					.addHeader("Content-Type", "application/x-www-form-urlencoded")
+					.addHeader("Accept", "application/json")
+					.url(keycloakUrl)
+					.retryShort()
+					.mediaType("application/x-www-form-urlencoded")
+					.body(body)
+					.execute();
+			if (response == null)
 				return;
-			}
+
 			accessToken = response.getAccessToken();
 			refreshToken = response.getRefreshToken();
 			refreshTimestamp = now + response.getExpiresIn() * 1000L;
