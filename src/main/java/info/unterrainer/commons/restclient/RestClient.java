@@ -5,7 +5,6 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import info.unterrainer.commons.serialization.JsonMapper;
-import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Call;
@@ -19,7 +18,6 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 @Slf4j
-@RequiredArgsConstructor
 @Accessors(fluent = true)
 public class RestClient {
 
@@ -27,6 +25,15 @@ public class RestClient {
 
 	protected OkHttpClient client;
 	protected final JsonMapper jsonMapper;
+
+	public RestClient(final JsonMapper jsonMapper) {
+		this(jsonMapper, null, null, 10000L, 10000L, 10000L);
+	}
+
+	public RestClient(final JsonMapper jsonMapper, final Long connectTimeoutInMillis, final Long readTimeoutInMillis,
+			final Long writeTimeoutInMillis) {
+		this(jsonMapper, null, null, connectTimeoutInMillis, readTimeoutInMillis, writeTimeoutInMillis);
+	}
 
 	public RestClient(final JsonMapper jsonMapper, final String userName, final String password) {
 		this(jsonMapper, userName, password, 10000L, 10000L, 10000L);
@@ -49,42 +56,15 @@ public class RestClient {
 		client = c.build();
 	}
 
-	public String get(final String url) throws IOException {
-		String r = call("GET", url, StringParam.builder().build());
+	public String getPlain(final String url, final StringParam headers) throws IOException {
+		String r = call("GET", url, headers, null, null);
 		return r;
 	}
 
-	public <T> T get(final String url, final Class<T> targetJson) throws IOException {
-		return get(url, targetJson, StringParam.builder().build());
-	}
-
-	public <T> T get(final String url, final Class<T> targetJson, final StringParam headers) throws IOException {
-		String r = call("GET", url, headers);
-		if (r == null)
-			return null;
-		return jsonMapper.fromStringTo(targetJson, r);
-	}
-
-	public String post(final String url, final String mediaType, final String body) throws IOException {
-		String r = call("POST", url, StringParam.builder().build());
-		return r;
-	}
-
-	public <T> T post(final String url, final Class<T> targetJson, final String mediaType, final String body)
+	public String postPlain(final String url, final StringParam headers, final String mediaType, final String body)
 			throws IOException {
-		return post(url, targetJson, StringParam.builder().build(), mediaType, body);
-	}
-
-	public <T> T post(final String url, final Class<T> targetJson, final StringParam headers, final String mediaType,
-			final String body) throws IOException {
-		String r = call("POST", url, headers);
-		if (r == null)
-			return null;
-		return jsonMapper.fromStringTo(targetJson, r);
-	}
-
-	private String call(final String method, final String url, final StringParam headers) throws IOException {
-		return call(method, url, headers, null, null);
+		String r = call("POST", url, headers, mediaType, body);
+		return r;
 	}
 
 	private String call(final String method, final String url, final StringParam headers, final String mediaType,
@@ -122,12 +102,20 @@ public class RestClient {
 		return client.newCall(request.build());
 	}
 
+	public <T> GetBuilder<T> get(final Class<?> type) {
+		return new GetBuilder<>(this, type);
+	}
+
+	public <T> PostBuilder<T> post(final Class<?> type) {
+		return new PostBuilder<>(this, type);
+	}
+
 	@FunctionalInterface
 	public interface HttpGetCall<T> {
 		T execute(RestClient client) throws IOException;
 	}
 
-	public <T> T once(final HttpGetCall<T> call) {
+	<T> T once(final HttpGetCall<T> call) {
 		try {
 			return call.execute(this);
 		} catch (IOException e) {
@@ -145,7 +133,7 @@ public class RestClient {
 	 * @param call the HTTP-call to make
 	 * @return the return type of the HTTP-call
 	 */
-	public <T> T retryShort(final HttpGetCall<T> call) {
+	<T> T retryShort(final HttpGetCall<T> call) {
 		return retry(2, 2D, 500L, call);
 	}
 
@@ -159,7 +147,7 @@ public class RestClient {
 	 * @param call the HTTP-call to make
 	 * @return the return type of the HTTP-call
 	 */
-	public <T> T retryEnduring(final HttpGetCall<T> call) {
+	<T> T retryEnduring(final HttpGetCall<T> call) {
 		return retry(3, 2D, 5000L, call);
 	}
 
@@ -178,7 +166,7 @@ public class RestClient {
 	 * @param call             the HTTP-call to make
 	 * @return the return type of the HTTP-call
 	 */
-	public <T> T retry(final int retries, final double retryWaitExpBase, final long retryWaitCapAt,
+	<T> T retry(final int retries, final double retryWaitExpBase, final long retryWaitCapAt,
 			final HttpGetCall<T> call) {
 		int ret = retries;
 		do
