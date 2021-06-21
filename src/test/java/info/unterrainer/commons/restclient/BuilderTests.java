@@ -20,7 +20,7 @@ public class BuilderTests {
 	@Test
 	public void correctCredentialsConnect() {
 		String response = restClient.<String>get(String.class)
-				.url("https://elite-server.lan.elite-zettl.at/")
+				.addUrl("https://elite-server.lan.elite-zettl.at/")
 				.execute();
 
 		System.out.println(response);
@@ -29,7 +29,7 @@ public class BuilderTests {
 	@Test
 	public void jsonDeserializationWorks() {
 		MessageJson response = restClient.<MessageJson>get(MessageJson.class)
-				.url("https://elite-server.lan.elite-zettl.at/")
+				.addUrl("https://elite-server.lan.elite-zettl.at/")
 				.execute();
 
 		System.out.println(response);

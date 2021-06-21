@@ -25,7 +25,8 @@ public class KeycloakContextTests {
 	public void listJsonDeserializationWorks() {
 		ListJson<EliteUserJson> users = kcc.<ListJson<EliteUserJson>>get(restClient, EliteUserJson.class)
 				.isListJson()
-				.url("https://elite-server.lan.elite-zettl.at/users")
+				.addUrl("https://elite-server.lan.elite-zettl.at")
+				.addUrl("users")
 				.execute();
 
 		System.out.println(users);
