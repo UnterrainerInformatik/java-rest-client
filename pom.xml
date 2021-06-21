@@ -10,7 +10,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>rest-client</artifactId>
-	<version>0.0.5</version>
+	<version>0.0.6</version>
 	<name>RestClient</name>
 	<packaging>jar</packaging>
 
