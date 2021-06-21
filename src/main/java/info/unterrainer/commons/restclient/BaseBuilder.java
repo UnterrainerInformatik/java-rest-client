@@ -98,8 +98,8 @@ public abstract class BaseBuilder<T, R extends BaseBuilder<T, R>> {
 	 * <p>
 	 * All the parameters are saved in a map and added later on, when you make the
 	 * call.<br>
-	 * The parameters will be checked for trailing and leading '&' and '?', which
-	 * will be removed before adding it to the map.<br>
+	 * The parameters will be checked for trailing and leading '&amp;' and '?',
+	 * which will be removed before adding it to the map.<br>
 	 * Input containing null as key or value will be ignored.
 	 *
 	 * @param key   the key of the parameter to add
