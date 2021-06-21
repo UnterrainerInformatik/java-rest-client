@@ -12,9 +12,11 @@ import org.mapstruct.ap.internal.util.Strings;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 
 import info.unterrainer.commons.httpserver.jsons.ListJson;
 import info.unterrainer.commons.restclient.RestClient.HttpGetCall;
+import info.unterrainer.commons.serialization.JsonMapper;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -67,7 +69,9 @@ public abstract class BaseBuilder<T, R extends BaseBuilder<T, R>> {
 	 */
 	@SuppressWarnings("unchecked")
 	public R isListJson() {
-		javaType = client.jsonMapper.getTypeFactory().constructParametricType(ListJson.class, type);
+		JsonMapper mapper = client.jsonMapper;
+		TypeFactory typeFactory = mapper.getTypeFactory();
+		javaType = typeFactory.constructParametricType(ListJson.class, type);
 		return (R) this;
 	}
 

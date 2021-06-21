@@ -33,8 +33,16 @@ public class KeycloakContext {
 	}
 
 	void update(final RestClient client) {
-		long now = System.currentTimeMillis();
+		if (userName == null) {
+			log.error("UserName is null");
+			return;
+		}
+		if (password == null) {
+			log.error("Password is null");
+			return;
+		}
 
+		long now = System.currentTimeMillis();
 		log.debug("now: [{}]", now);
 		log.debug("accessToken: [{}]", accessToken);
 		log.debug("refreshTimestamp: [{}]", refreshTimestamp);
