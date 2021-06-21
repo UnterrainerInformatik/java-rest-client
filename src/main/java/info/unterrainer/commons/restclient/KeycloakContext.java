@@ -75,7 +75,7 @@ public class KeycloakContext {
 			response = client.<TokenResponseJson>post(TokenResponseJson.class)
 					.addHeader("Content-Type", "application/x-www-form-urlencoded")
 					.addHeader("Accept", "application/json")
-					.url(keycloakUrl)
+					.addUrl(keycloakUrl)
 					.retryShort()
 					.mediaType("application/x-www-form-urlencoded")
 					.body(body)
