@@ -3,7 +3,7 @@ package info.unterrainer.commons.restclient;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
-import info.unterrainer.commons.httpserver.exceptions.UnauthorizedException;
+import info.unterrainer.commons.restclient.exceptions.UnauthorizedException;
 import info.unterrainer.commons.restclient.jsons.TokenResponseJson;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

@@ -3,8 +3,8 @@ package info.unterrainer.commons.restclient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import info.unterrainer.commons.httpserver.jsons.ListJson;
 import info.unterrainer.commons.restclient.jsons.EliteUserJson;
+import info.unterrainer.commons.restclient.jsons.ListJson;
 import info.unterrainer.commons.serialization.JsonMapper;
 
 public class KeycloakContextTests {

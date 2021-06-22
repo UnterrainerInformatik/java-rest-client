@@ -14,8 +14,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
-import info.unterrainer.commons.httpserver.jsons.ListJson;
 import info.unterrainer.commons.restclient.RestClient.HttpGetCall;
+import info.unterrainer.commons.restclient.exceptions.RestClientException;
+import info.unterrainer.commons.restclient.jsons.ListJson;
 import info.unterrainer.commons.serialization.JsonMapper;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -164,6 +165,7 @@ public abstract class BaseBuilder<T, R extends BaseBuilder<T, R>> {
 	/**
 	 * Execute the call.
 	 *
+	 * @throws RestClientException if an error occurred.
 	 * @return the return value of type you specified when you created this builder.
 	 */
 	public T execute() {
@@ -201,5 +203,31 @@ public abstract class BaseBuilder<T, R extends BaseBuilder<T, R>> {
 		while (u.endsWith(s))
 			u = u.substring(0, u.length() - 2);
 		return u;
+	}
+
+	protected <V> Object castTo(final JsonMapper jsonMapper, final String s) {
+		if (s == null)
+			return null;
+
+		if (String.class.isAssignableFrom(type))
+			return s;
+		if (Boolean.class.isAssignableFrom(type))
+			return Boolean.parseBoolean(s);
+		if (Byte.class.isAssignableFrom(type))
+			return Byte.parseByte(s);
+		if (Short.class.isAssignableFrom(type))
+			return Short.parseShort(s);
+		if (Integer.class.isAssignableFrom(type))
+			return Integer.parseInt(s);
+		if (Long.class.isAssignableFrom(type))
+			return Long.parseLong(s);
+		if (Float.class.isAssignableFrom(type))
+			return Float.parseFloat(s);
+		if (Double.class.isAssignableFrom(type))
+			return Double.parseDouble(s);
+		if (Void.class.isAssignableFrom(type))
+			return null;
+
+		return client.jsonMapper.fromStringTo(type, s);
 	}
 }

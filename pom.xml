@@ -22,11 +22,7 @@
 	</properties>
 
 	<dependencies>
-		<dependency>
-			<groupId>info.unterrainer.commons</groupId>
-			<artifactId>http-server</artifactId>
-			<version>0.2.21</version>
-		</dependency>
+		
 		<dependency>
 			<groupId>info.unterrainer.commons</groupId>
 			<artifactId>serialization</artifactId>

@@ -17,9 +17,7 @@ public class BaseGetBuilder<T, R> extends BaseBuilder<T, BaseGetBuilder<T, R>> {
 	protected HttpGetCall<T> provideCall(final String url, final Class<T> type, final Map<String, String> headers) {
 		return client -> {
 			String r = client.getPlain(url, StringParam.builder().parameters(headers).build());
-			if (String.class.isAssignableFrom(type))
-				return (T) r;
-			return client.jsonMapper.fromStringTo(type, r);
+			return (T) castTo(client.jsonMapper, r);
 		};
 	}
 
