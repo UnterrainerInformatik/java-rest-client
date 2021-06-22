@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import info.unterrainer.commons.restclient.exceptions.RestClientException;
 import info.unterrainer.commons.serialization.JsonMapper;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
@@ -75,7 +76,7 @@ public class RestClient {
 		if (!response.isSuccessful()) {
 			log.warn("HTTP call to url [{}] failed with [{}]", url, response.code());
 			response.body().close();
-			return null;
+			throw new RestClientException(String.format("HTTP call failed with %s.", response.code()));
 		}
 
 		log.debug("HTTP call to url [{}] succeeded with [{}]", url, response.code());

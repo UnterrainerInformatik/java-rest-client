@@ -3,6 +3,7 @@ package info.unterrainer.commons.restclient;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
+import info.unterrainer.commons.restclient.exceptions.UnauthorizedException;
 import info.unterrainer.commons.restclient.jsons.TokenResponseJson;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -89,7 +90,7 @@ public class KeycloakContext {
 					.body(body)
 					.execute();
 			if (response == null)
-				return;
+				throw new UnauthorizedException("Getting an access-token from the keycloak instance didn't work out.");
 
 			accessToken = response.getAccessToken();
 			refreshToken = response.getRefreshToken();
