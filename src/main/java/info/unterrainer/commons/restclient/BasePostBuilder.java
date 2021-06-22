@@ -4,6 +4,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.JavaType;
 
+import info.unterrainer.commons.httpserver.exceptions.InternalServerErrorException;
 import info.unterrainer.commons.restclient.RestClient.HttpGetCall;
 
 public class BasePostBuilder<T, R> extends BaseBuilder<T, BasePostBuilder<T, R>> {
@@ -32,6 +33,8 @@ public class BasePostBuilder<T, R> extends BaseBuilder<T, BasePostBuilder<T, R>>
 	protected HttpGetCall<T> provideCall(final String url, final Class<T> type, final Map<String, String> headers) {
 		return client -> {
 			String r = client.postPlain(url, StringParam.builder().parameters(headers).build(), mediaType, body);
+			if (r == null)
+				throw new InternalServerErrorException("HTTP-call failed.");
 			if (String.class.isAssignableFrom(type))
 				return (T) r;
 			return client.jsonMapper.fromStringTo(type, r);
