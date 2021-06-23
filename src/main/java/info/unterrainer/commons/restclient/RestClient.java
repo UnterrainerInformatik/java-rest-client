@@ -74,9 +74,8 @@ public class RestClient {
 		Response response = call.execute();
 
 		if (!response.isSuccessful()) {
-			log.warn("HTTP call to url [{}] failed with [{}]", url, response.code());
 			response.body().close();
-			throw new RestClientException(String.format("HTTP call failed with %s.", response.code()));
+			throw new RestClientException(String.format("HTTP call to url %s failed with %s.", url, response.code()));
 		}
 
 		log.debug("HTTP call to url [{}] succeeded with [{}]", url, response.code());
