@@ -8,7 +8,7 @@ import info.unterrainer.commons.restclient.RestClient.HttpGetCall;
 
 public class BasePostBuilder<T, R> extends BaseBuilder<T, BasePostBuilder<T, R>> {
 
-	protected String mediaType;
+	protected String mediaType = "application/json";
 	protected String body;
 
 	BasePostBuilder(final RestClient client, final Class<?> type) {

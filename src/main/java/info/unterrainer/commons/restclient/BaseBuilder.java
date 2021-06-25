@@ -77,6 +77,20 @@ public abstract class BaseBuilder<T, R extends BaseBuilder<T, R>> {
 	}
 
 	/**
+	 * Sets the return-type to be of {@link List} with the generic type you provided
+	 * when starting this builder.
+	 *
+	 * @return a {@link BaseBuilder} to provide a fluent interface.
+	 */
+	@SuppressWarnings("unchecked")
+	public R isList() {
+		JsonMapper mapper = client.jsonMapper;
+		TypeFactory typeFactory = mapper.getTypeFactory();
+		javaType = typeFactory.constructParametricType(List.class, type);
+		return (R) this;
+	}
+
+	/**
 	 * Adds a header to the call.
 	 * <p>
 	 * All the headers are saved to a map and added later on, when you make the
