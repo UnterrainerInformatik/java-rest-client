@@ -41,6 +41,19 @@ public abstract class BaseBuilder<T, R extends BaseBuilder<T, R>> {
 	protected Map<String, String> headers = new HashMap<>();
 	protected Map<String, String> parameters = new HashMap<>();
 	protected Retry retry = Retry.ONCE;
+	protected boolean isGZipped;
+
+	/**
+	 * Adds the header {@code "Content-Encoding": "gzip"} which triggers
+	 * GZIP-compression within our RestClient.
+	 *
+	 * @return a {@link BaseBuilder} to provide a fluent interface.
+	 */
+	@SuppressWarnings("unchecked")
+	public R gzip() {
+		addHeader("Content-Encoding", "gzip");
+		return (R) this;
+	}
 
 	/**
 	 * Add a string to an URL.
