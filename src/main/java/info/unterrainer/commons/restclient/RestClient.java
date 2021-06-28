@@ -48,6 +48,7 @@ public class RestClient {
 				.connectTimeout(connectTimeoutInMillis, TimeUnit.MILLISECONDS)
 				.readTimeout(readTimeoutInMillis, TimeUnit.MILLISECONDS)
 				.writeTimeout(writeTimeoutInMillis, TimeUnit.MILLISECONDS)
+				.addInterceptor(new GzipInterceptor())
 				.followRedirects(true);
 		if (userName != null || password != null)
 			c.authenticator((route, response) -> {
