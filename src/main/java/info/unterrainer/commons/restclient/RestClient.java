@@ -59,19 +59,30 @@ public class RestClient {
 	}
 
 	public String getPlain(final String url, final StringParam headers) throws IOException {
-		String r = call("GET", url, headers, null, null);
+		String r = call("GET", url, headers, null, null, null);
 		return r;
 	}
 
-	public String postPlain(final String url, final StringParam headers, final String mediaType, final String body)
-			throws IOException {
-		String r = call("POST", url, headers, mediaType, body);
+	public String delPlain(final String url, final StringParam headers) throws IOException {
+		String r = call("DEL", url, headers, null, null, null);
+		return r;
+	}
+
+	public String postPlain(final String url, final StringParam headers, final String mediaType, final String body,
+			final byte[] binary) throws IOException {
+		String r = call("POST", url, headers, mediaType, body, binary);
+		return r;
+	}
+
+	public String putPlain(final String url, final StringParam headers, final String mediaType, final String body,
+			final byte[] binary) throws IOException {
+		String r = call("PUT", url, headers, mediaType, body, binary);
 		return r;
 	}
 
 	private String call(final String method, final String url, final StringParam headers, final String mediaType,
-			final String body) throws IOException {
-		Call call = getCall(method, url, headers, mediaType, body);
+			final String body, final byte[] binary) throws IOException {
+		Call call = getCall(method, url, headers, mediaType, body, binary);
 		Response response = call.execute();
 
 		if (!response.isSuccessful()) {
@@ -86,16 +97,22 @@ public class RestClient {
 	}
 
 	private Call getCall(final String method, final String url, final StringParam headers, final String mediaType,
-			final String body) {
+			final String body, final byte[] binary) {
 
+		String mt = mediaType;
+		if (binary != null && mt == null)
+			mt = "application/octet-stream";
 		RequestBody requestBody;
-		if (body == null)
-			requestBody = RequestBody.create(null, "");
-		else
-			requestBody = RequestBody.create(MediaType.parse(mediaType), body);
+		if (binary == null) {
+			if (body == null)
+				requestBody = RequestBody.create("", null);
+			else
+				requestBody = RequestBody.create(body, MediaType.parse(mt));
+		} else
+			requestBody = RequestBody.create(binary, MediaType.parse(mt));
 
 		Builder request = new Request.Builder();
-		if (!method.equalsIgnoreCase("GET"))
+		if (method.equalsIgnoreCase("POST") || method.equalsIgnoreCase("PUT"))
 			request.method(method, requestBody);
 
 		request.headers(Headers.of(headers.getParameters())).url(url);
@@ -107,8 +124,16 @@ public class RestClient {
 		return new GetBuilder<>(this, type);
 	}
 
+	public <T> DelBuilder<T> del(final Class<?> type) {
+		return new DelBuilder<>(this, type);
+	}
+
 	public <T> PostBuilder<T> post(final Class<?> type) {
 		return new PostBuilder<>(this, type);
+	}
+
+	public <T> PutBuilder<T> put(final Class<?> type) {
+		return new PutBuilder<>(this, type);
 	}
 
 	@FunctionalInterface
