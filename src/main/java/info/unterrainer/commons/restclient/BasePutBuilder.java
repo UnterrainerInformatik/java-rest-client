@@ -6,13 +6,13 @@ import com.fasterxml.jackson.databind.JavaType;
 
 import info.unterrainer.commons.restclient.RestClient.HttpGetCall;
 
-public class BasePostBuilder<T, R> extends BaseBuilder<T, BasePostBuilder<T, R>> {
+public class BasePutBuilder<T, R> extends BaseBuilder<T, BasePutBuilder<T, R>> {
 
 	protected String mediaType = "application/json";
 	protected String body;
 	protected byte[] binary;
 
-	BasePostBuilder(final RestClient client, final Class<?> type) {
+	BasePutBuilder(final RestClient client, final Class<?> type) {
 		super(client, type);
 	}
 
@@ -38,8 +38,7 @@ public class BasePostBuilder<T, R> extends BaseBuilder<T, BasePostBuilder<T, R>>
 	@Override
 	protected HttpGetCall<T> provideCall(final String url, final Class<T> type, final Map<String, String> headers) {
 		return client -> {
-			String r = client.postPlain(url, StringParam.builder().parameters(headers).build(), mediaType, body,
-					binary);
+			String r = client.putPlain(url, StringParam.builder().parameters(headers).build(), mediaType, body, binary);
 			return (T) castTo(client.jsonMapper, r);
 		};
 	}
@@ -48,8 +47,7 @@ public class BasePostBuilder<T, R> extends BaseBuilder<T, BasePostBuilder<T, R>>
 	protected HttpGetCall<T> provideJavaTypeCall(final String url, final JavaType javaType,
 			final Map<String, String> headers) {
 		return client -> {
-			String r = client.postPlain(url, StringParam.builder().parameters(headers).build(), mediaType, body,
-					binary);
+			String r = client.putPlain(url, StringParam.builder().parameters(headers).build(), mediaType, body, binary);
 			return client.jsonMapper.fromStringTo(javaType, r);
 		};
 	}
