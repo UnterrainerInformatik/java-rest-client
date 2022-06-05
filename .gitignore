@@ -26,3 +26,7 @@ hs_err_pid*
 src/main/java/info/unterrainer/commons/jreutils/Information.java
 
 .settings/
+
+.classpath
+
+src/main/java/info/unterrainer/commons/restclient/Information.java
