@@ -58,45 +58,23 @@ public class RestClient {
 		client = c.build();
 	}
 
-	public String getPlain(final String url) throws IOException {
-		String r = call("GET", url, null, null, null, null);
-		return r;
-	}
-
-	public String delPlain(final String url) throws IOException {
-		String r = call("DEL", url, null, null, null, null);
-		return r;
-	}
-
-	public String postPlain(final String url, final String mediaType, final String body, final byte[] binary)
-			throws IOException {
-		String r = call("POST", url, null, mediaType, body, binary);
-		return r;
-	}
-
-	public String putPlain(final String url, final String mediaType, final String body, final byte[] binary)
-			throws IOException {
-		String r = call("PUT", url, null, mediaType, body, binary);
-		return r;
-	}
-
-	public String getPlain(final String url, final StringParam headers) throws IOException {
+	String getPlain(final String url, final StringParam headers) throws IOException {
 		String r = call("GET", url, headers, null, null, null);
 		return r;
 	}
 
-	public String delPlain(final String url, final StringParam headers) throws IOException {
+	String delPlain(final String url, final StringParam headers) throws IOException {
 		String r = call("DEL", url, headers, null, null, null);
 		return r;
 	}
 
-	public String postPlain(final String url, final StringParam headers, final String mediaType, final String body,
+	String postPlain(final String url, final StringParam headers, final String mediaType, final String body,
 			final byte[] binary) throws IOException {
 		String r = call("POST", url, headers, mediaType, body, binary);
 		return r;
 	}
 
-	public String putPlain(final String url, final StringParam headers, final String mediaType, final String body,
+	String putPlain(final String url, final StringParam headers, final String mediaType, final String body,
 			final byte[] binary) throws IOException {
 		String r = call("PUT", url, headers, mediaType, body, binary);
 		return r;
