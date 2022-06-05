@@ -34,4 +34,10 @@ public class BuilderTests {
 
 		System.out.println(response);
 	}
+
+	@Test
+	public void stringGetsStringWithoutSerialization() {
+		String response = restClient.<String>get(String.class).addUrl("https://www.google.at/").execute();
+		System.out.println(response);
+	}
 }

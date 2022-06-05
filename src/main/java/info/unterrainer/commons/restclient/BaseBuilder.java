@@ -228,7 +228,7 @@ public abstract class BaseBuilder<T, R extends BaseBuilder<T, R>> {
 		while (u.startsWith(s))
 			u = u.substring(1);
 		while (u.endsWith(s))
-			u = u.substring(0, u.length() - 2);
+			u = u.substring(0, u.length() - 1);
 		return u;
 	}
 

@@ -30,3 +30,5 @@ src/main/java/info/unterrainer/commons/jreutils/Information.java
 .classpath
 
 src/main/java/info/unterrainer/commons/restclient/Information.java
+
+bin/
