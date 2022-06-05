@@ -58,6 +58,28 @@ public class RestClient {
 		client = c.build();
 	}
 
+	public String getPlain(final String url) throws IOException {
+		String r = call("GET", url, null, null, null, null);
+		return r;
+	}
+
+	public String delPlain(final String url) throws IOException {
+		String r = call("DEL", url, null, null, null, null);
+		return r;
+	}
+
+	public String postPlain(final String url, final String mediaType, final String body, final byte[] binary)
+			throws IOException {
+		String r = call("POST", url, null, mediaType, body, binary);
+		return r;
+	}
+
+	public String putPlain(final String url, final String mediaType, final String body, final byte[] binary)
+			throws IOException {
+		String r = call("PUT", url, null, mediaType, body, binary);
+		return r;
+	}
+
 	public String getPlain(final String url, final StringParam headers) throws IOException {
 		String r = call("GET", url, headers, null, null, null);
 		return r;
@@ -115,9 +137,10 @@ public class RestClient {
 		if (method.equalsIgnoreCase("POST") || method.equalsIgnoreCase("PUT"))
 			request.method(method, requestBody);
 
-		request.headers(Headers.of(headers.getParameters())).url(url);
+		if (headers != null)
+			request.headers(Headers.of(headers.getParameters()));
 
-		return client.newCall(request.build());
+		return client.newCall(request.url(url).build());
 	}
 
 	public <T> GetBuilder<T> get(final Class<?> type) {
