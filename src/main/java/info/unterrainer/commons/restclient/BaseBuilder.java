@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.mapstruct.ap.internal.util.Strings;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
@@ -196,12 +194,11 @@ public abstract class BaseBuilder<T, R extends BaseBuilder<T, R>> {
 	 * @return the return value of type you specified when you created this builder.
 	 */
 	public T execute() {
-		String url = Strings.join(this.url.stream().map(e -> cutLeadingTrailing("/", e)).collect(Collectors.toList()),
-				"/");
+		String url = String.join("/",
+				this.url.stream().map(e -> cutLeadingTrailing("/", e)).collect(Collectors.toList()));
 
-		String params = Strings.join(
-				parameters.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).collect(Collectors.toList()),
-				"&");
+		String params = String.join("&",
+				parameters.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).collect(Collectors.toList()));
 		if (!params.isBlank())
 			url += "?" + params;
 
