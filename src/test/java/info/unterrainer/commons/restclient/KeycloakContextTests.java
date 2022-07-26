@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import info.unterrainer.commons.restclient.jsons.EliteUserJson;
 import info.unterrainer.commons.restclient.jsons.ListJson;
-import info.unterrainer.commons.serialization.JsonMapper;
+import info.unterrainer.commons.serialization.jsonmapper.JsonMapper;
 
 public class KeycloakContextTests {
 

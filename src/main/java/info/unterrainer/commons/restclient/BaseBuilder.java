@@ -15,7 +15,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import info.unterrainer.commons.restclient.RestClient.HttpGetCall;
 import info.unterrainer.commons.restclient.exceptions.RestClientException;
 import info.unterrainer.commons.restclient.jsons.ListJson;
-import info.unterrainer.commons.serialization.JsonMapper;
+import info.unterrainer.commons.serialization.jsonmapper.JsonMapper;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -203,12 +203,12 @@ public abstract class BaseBuilder<T, R extends BaseBuilder<T, R>> {
 			url += "?" + params;
 
 		switch (retry) {
-		case SHORT:
-			return client.retryShort(provide(url, type, javaType, headers));
-		case ENDURING:
-			return client.retryEnduring(provide(url, type, javaType, headers));
-		default:
-			return client.once(provide(url, type, javaType, headers));
+			case SHORT:
+				return client.retryShort(provide(url, type, javaType, headers));
+			case ENDURING:
+				return client.retryEnduring(provide(url, type, javaType, headers));
+			default:
+				return client.once(provide(url, type, javaType, headers));
 		}
 	}
 
