@@ -1,15 +1,24 @@
 package info.unterrainer.commons.restclient;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+
+import com.burgstaller.okhttp.AuthenticationCacheInterceptor;
+import com.burgstaller.okhttp.CachingAuthenticatorDecorator;
+import com.burgstaller.okhttp.DispatchingAuthenticator;
+import com.burgstaller.okhttp.basic.BasicAuthenticator;
+import com.burgstaller.okhttp.digest.CachingAuthenticator;
+import com.burgstaller.okhttp.digest.Credentials;
+import com.burgstaller.okhttp.digest.DigestAuthenticator;
 
 import info.unterrainer.commons.restclient.exceptions.RestClientException;
 import info.unterrainer.commons.serialization.jsonmapper.JsonMapper;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Call;
-import okhttp3.Credentials;
 import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -50,11 +59,22 @@ public class RestClient {
 				.writeTimeout(writeTimeoutInMillis, TimeUnit.MILLISECONDS)
 				.addInterceptor(new GzipInterceptor())
 				.followRedirects(true);
-		if (userName != null || password != null)
-			c.authenticator((route, response) -> {
-				String credential = Credentials.basic(userName, password);
-				return response.request().newBuilder().header("Authorization", credential).build();
-			});
+		if (userName != null || password != null) {
+			final Map<String, CachingAuthenticator> authCache = new ConcurrentHashMap<>();
+
+			Credentials credentials = new Credentials(userName, password);
+			final BasicAuthenticator basicAuthenticator = new BasicAuthenticator(credentials);
+			final DigestAuthenticator digestAuthenticator = new DigestAuthenticator(credentials);
+
+			// note that all auth schemes should be registered as lowercase!
+			DispatchingAuthenticator authenticator = new DispatchingAuthenticator.Builder()
+					.with("digest", digestAuthenticator)
+					.with("basic", basicAuthenticator)
+					.build();
+
+			c.authenticator(new CachingAuthenticatorDecorator(authenticator, authCache))
+					.addInterceptor(new AuthenticationCacheInterceptor(authCache));
+		}
 		client = c.build();
 	}
 
