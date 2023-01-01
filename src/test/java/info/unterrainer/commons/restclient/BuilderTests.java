@@ -4,7 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import info.unterrainer.commons.restclient.jsons.MessageJson;
-import info.unterrainer.commons.serialization.JsonMapper;
+import info.unterrainer.commons.serialization.jsonmapper.JsonMapper;
 
 public class BuilderTests {
 

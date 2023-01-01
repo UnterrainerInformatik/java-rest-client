@@ -1,6 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<parent>
 		<groupId>info.unterrainer.commons</groupId>
@@ -10,7 +8,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>rest-client</artifactId>
-	<version>0.1.0</version>
+	<version>0.1.2</version>
 	<name>RestClient</name>
 	<packaging>jar</packaging>
 
@@ -26,7 +24,7 @@
 		<dependency>
 			<groupId>info.unterrainer.commons</groupId>
 			<artifactId>serialization</artifactId>
-			<version>0.2.0</version>
+			<version>0.2.3</version>
 		</dependency>
 		<dependency>
 			<groupId>com.squareup.okhttp3</groupId>
