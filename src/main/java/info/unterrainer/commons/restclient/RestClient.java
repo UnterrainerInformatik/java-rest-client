@@ -34,6 +34,7 @@ public class RestClient {
 	private final Random random = new Random();
 
 	protected OkHttpClient client;
+	protected final Map<String, CachingAuthenticator> authCache = new ConcurrentHashMap<>();
 	protected final JsonMapper jsonMapper;
 
 	public RestClient(final JsonMapper jsonMapper) {
@@ -60,13 +61,11 @@ public class RestClient {
 				.addInterceptor(new GzipInterceptor())
 				.followRedirects(true);
 		if (userName != null || password != null) {
-			final Map<String, CachingAuthenticator> authCache = new ConcurrentHashMap<>();
-
 			Credentials credentials = new Credentials(userName, password);
 			final BasicAuthenticator basicAuthenticator = new BasicAuthenticator(credentials);
 			final DigestAuthenticator digestAuthenticator = new DigestAuthenticator(credentials);
 
-			// note that all auth schemes should be registered as lowercase!
+			// Note that all authentication schemes should be registered as lower-case!
 			DispatchingAuthenticator authenticator = new DispatchingAuthenticator.Builder()
 					.with("digest", digestAuthenticator)
 					.with("basic", basicAuthenticator)
