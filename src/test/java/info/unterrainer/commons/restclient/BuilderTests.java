@@ -5,7 +5,9 @@ import org.junit.jupiter.api.Test;
 
 import info.unterrainer.commons.restclient.jsons.MessageJson;
 import info.unterrainer.commons.serialization.jsonmapper.JsonMapper;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class BuilderTests {
 
 	private JsonMapper jsonMapper;
@@ -23,7 +25,7 @@ public class BuilderTests {
 				.addUrl("https://elite-server.lan.elite-zettl.at/")
 				.execute();
 
-		System.out.println(response);
+		log.info(response);
 	}
 
 	@Test
@@ -32,12 +34,12 @@ public class BuilderTests {
 				.addUrl("https://elite-server.lan.elite-zettl.at/")
 				.execute();
 
-		System.out.println(response);
+		log.info(response.toString());
 	}
 
 	@Test
 	public void stringGetsStringWithoutSerialization() {
 		String response = restClient.<String>get(String.class).addUrl("https://www.google.at/").execute();
-		System.out.println(response);
+		log.info(response);
 	}
 }

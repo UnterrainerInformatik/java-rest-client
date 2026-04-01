@@ -6,7 +6,9 @@ import org.junit.jupiter.api.Test;
 import info.unterrainer.commons.restclient.jsons.EliteUserJson;
 import info.unterrainer.commons.restclient.jsons.ListJson;
 import info.unterrainer.commons.serialization.jsonmapper.JsonMapper;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class KeycloakContextTests {
 
 	private JsonMapper jsonMapper;
@@ -16,7 +18,7 @@ public class KeycloakContextTests {
 	@BeforeEach
 	public void BeforeAll() {
 		jsonMapper = JsonMapper.create();
-		kcc = new KeycloakContext("https://keycloak.lan.elite-zettl.at/auth/realms/Cms/protocol/openid-connect/token",
+		kcc = new KeycloakContext("https://keycloak.lan.elite-zettl.at/realms/Cms/protocol/openid-connect/token",
 				"gerald.unterrainer@cms-building.at", "9BZOx5EBJRjN4azmkhhA", "CMS", null);
 		restClient = new RestClient(jsonMapper);
 	}
@@ -29,6 +31,6 @@ public class KeycloakContextTests {
 				.addUrl("users")
 				.execute();
 
-		System.out.println(users);
+		log.info(users.toString());
 	}
 }
