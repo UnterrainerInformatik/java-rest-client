@@ -164,7 +164,7 @@ public abstract class BaseBuilder<T, R extends BaseBuilder<T, R>> {
 
 	/**
 	 * By specifying this, you tell the client to retry this call for some time, if
-	 * it fails (see {@link RestClient#retryShort(HttpGetCall)}).
+	 * it fails (see {@link RestClient#retryShort(HttpGetCall, Consumer)}).
 	 * <p>
 	 * The default is to just try it once and then give up and return an error.
 	 *
@@ -178,7 +178,7 @@ public abstract class BaseBuilder<T, R extends BaseBuilder<T, R>> {
 
 	/**
 	 * By specifying this, you tell the client to retry this call for quite some
-	 * time, if it fails (see {@link RestClient#retryEnduring(HttpGetCall)}).
+	 * time, if it fails (see {@link RestClient#retryEnduring(HttpGetCall, Consumer)}).
 	 * <p>
 	 * The default is to just try it once and then give up and return an error.
 	 *
