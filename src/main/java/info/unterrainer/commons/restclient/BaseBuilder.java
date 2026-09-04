@@ -1,11 +1,13 @@
 package info.unterrainer.commons.restclient;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -40,6 +42,11 @@ public abstract class BaseBuilder<T, R extends BaseBuilder<T, R>> {
 	protected Map<String, String> parameters = new HashMap<>();
 	protected Retry retry = Retry.ONCE;
 	protected boolean isGZipped;
+
+	// Transport failure of the last execute(), or null if none occurred. A builder
+	// is created per call (RestClient.get/post/put/del each return a new one), so
+	// this field is call-local and safe to read after execute() returns.
+	private IOException lastException;
 
 	/**
 	 * Adds the header {@code "Content-Encoding": "gzip"} which triggers
@@ -194,6 +201,8 @@ public abstract class BaseBuilder<T, R extends BaseBuilder<T, R>> {
 	 * @return the return value of type you specified when you created this builder.
 	 */
 	public T execute() {
+		lastException = null;
+		Consumer<IOException> onError = e -> lastException = e;
 		String url = String.join("/",
 				this.url.stream().map(e -> cutLeadingTrailing("/", e)).collect(Collectors.toList()));
 
@@ -204,12 +213,37 @@ public abstract class BaseBuilder<T, R extends BaseBuilder<T, R>> {
 
 		switch (retry) {
 			case SHORT:
-				return client.retryShort(provide(url, type, javaType, headers));
+				return client.retryShort(provide(url, type, javaType, headers), onError);
 			case ENDURING:
-				return client.retryEnduring(provide(url, type, javaType, headers));
+				return client.retryEnduring(provide(url, type, javaType, headers), onError);
 			default:
-				return client.once(provide(url, type, javaType, headers));
+				return client.once(provide(url, type, javaType, headers), onError);
 		}
+	}
+
+	/**
+	 * Returns the transport failure that made the last {@link #execute()} return
+	 * {@code null}, or {@code null} if no transport failure occurred.
+	 * <p>
+	 * {@code execute()} answers {@code null} both for a call that failed at the
+	 * transport level and for a call that legitimately produced no value, which on
+	 * its own leaves the caller unable to tell the two apart. Reading this after
+	 * {@code execute()} resolves that: a non-{@code null} result is the
+	 * {@link IOException} that ended the call, and {@code null} means no transport
+	 * failure happened.
+	 * <p>
+	 * Note that this covers transport failures only. A call the remote answered
+	 * with a non-2xx status raises a
+	 * {@link info.unterrainer.commons.restclient.exceptions.RestClientException}
+	 * instead, which carries the status code — it never reaches this field.
+	 * <p>
+	 * The builder is created fresh per call, so this value belongs to this
+	 * builder's own {@code execute()} and is not shared with other calls.
+	 *
+	 * @return the last transport failure, or {@code null} if there was none
+	 */
+	public IOException getLastException() {
+		return lastException;
 	}
 
 	@SuppressWarnings("unchecked")

@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import com.burgstaller.okhttp.AuthenticationCacheInterceptor;
 import com.burgstaller.okhttp.CachingAuthenticatorDecorator;
@@ -162,10 +163,11 @@ public class RestClient {
 		T execute(RestClient client) throws IOException;
 	}
 
-	<T> T once(final HttpGetCall<T> call) {
+	<T> T once(final HttpGetCall<T> call, final Consumer<IOException> onError) {
 		try {
 			return call.execute(this);
 		} catch (IOException e) {
+			onError.accept(e);
 			return null;
 		}
 	}
@@ -173,29 +175,31 @@ public class RestClient {
 	/**
 	 * Makes an HTTP-call and retries it if it fails.
 	 * <p>
-	 * Calls {@link #retry(int, double, long, HttpGetCall)} with parameters (10, 2D,
-	 * 500L, call).
+	 * Calls {@link #retry(int, double, long, HttpGetCall, Consumer)} with parameters
+	 * (2, 2D, 500L, call).
 	 *
-	 * @param <T>  the return value of the HTTP-call
-	 * @param call the HTTP-call to make
+	 * @param <T>     the return value of the HTTP-call
+	 * @param call    the HTTP-call to make
+	 * @param onError receives the last {@link IOException} if every attempt failed
 	 * @return the return type of the HTTP-call
 	 */
-	<T> T retryShort(final HttpGetCall<T> call) {
-		return retry(2, 2D, 500L, call);
+	<T> T retryShort(final HttpGetCall<T> call, final Consumer<IOException> onError) {
+		return retry(2, 2D, 500L, call, onError);
 	}
 
 	/**
 	 * Makes an HTTP-call and retries it if it fails.
 	 * <p>
-	 * Calls {@link #retry(int, double, long, HttpGetCall)} with parameters (40, 2D,
-	 * 5000L, call).
+	 * Calls {@link #retry(int, double, long, HttpGetCall, Consumer)} with parameters
+	 * (3, 2D, 5000L, call).
 	 *
-	 * @param <T>  the return value of the HTTP-call
-	 * @param call the HTTP-call to make
+	 * @param <T>     the return value of the HTTP-call
+	 * @param call    the HTTP-call to make
+	 * @param onError receives the last {@link IOException} if every attempt failed
 	 * @return the return type of the HTTP-call
 	 */
-	<T> T retryEnduring(final HttpGetCall<T> call) {
-		return retry(3, 2D, 5000L, call);
+	<T> T retryEnduring(final HttpGetCall<T> call, final Consumer<IOException> onError) {
+		return retry(3, 2D, 5000L, call, onError);
 	}
 
 	/**
@@ -211,11 +215,14 @@ public class RestClient {
 	 * @param retryWaitCapAt   the value to cap the retry-wait-time at (4 with
 	 *                         expBase=2 will give 2,4,4,4,4...)
 	 * @param call             the HTTP-call to make
+	 * @param onError          receives the last {@link IOException} if every attempt
+	 *                         failed; not called on success
 	 * @return the return type of the HTTP-call
 	 */
 	<T> T retry(final int retries, final double retryWaitExpBase, final long retryWaitCapAt,
-			final HttpGetCall<T> call) {
+			final HttpGetCall<T> call, final Consumer<IOException> onError) {
 		int ret = retries;
+		IOException last = null;
 		do
 			try {
 				T result = call.execute(this);
@@ -224,6 +231,7 @@ public class RestClient {
 				else
 					throw new IOException("Call returned error.");
 			} catch (IOException e) {
+				last = e;
 				ret--;
 				int retry = retries - ret;
 				log.debug("Call threw exception [{}] on retry [{}].", e.getMessage(), retry);
@@ -235,10 +243,12 @@ public class RestClient {
 					Thread.sleep(sleepTime);
 				} catch (InterruptedException e1) {
 					Thread.currentThread().interrupt();
+					onError.accept(last);
 					return null;
 				}
 			}
 		while (ret > 0);
+		onError.accept(last);
 		return null;
 	}
 
