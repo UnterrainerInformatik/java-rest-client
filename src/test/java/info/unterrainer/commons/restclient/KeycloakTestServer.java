@@ -18,9 +18,9 @@ import com.sun.net.httpserver.HttpServer;
  * port.
  * <p>
  * The token endpoint hands out numbered tokens ({@code token-1},
- * {@code token-2}, …) and counts the grants. The resource endpoint answers 401
- * for every token in the refused set, a fixed status if one is set, and 200 with
- * a JSON body otherwise.
+ * {@code token-2}, …) and counts the grants. The resource endpoint records the
+ * method and token of every call and answers 401 for every token in the refused
+ * set, a fixed status if one is set, and 200 with a JSON body otherwise.
  */
 class KeycloakTestServer implements AutoCloseable {
 
@@ -31,6 +31,7 @@ class KeycloakTestServer implements AutoCloseable {
 	private final AtomicInteger resourceCalls = new AtomicInteger();
 	private final Set<String> refusedTokens = ConcurrentHashMap.newKeySet();
 	private final List<String> receivedTokens = new CopyOnWriteArrayList<>();
+	private final List<String> receivedMethods = new CopyOnWriteArrayList<>();
 	private volatile int fixedStatus;
 
 	KeycloakTestServer() throws IOException {
@@ -72,6 +73,10 @@ class KeycloakTestServer implements AutoCloseable {
 		return receivedTokens;
 	}
 
+	List<String> receivedMethods() {
+		return receivedMethods;
+	}
+
 	@Override
 	public void close() {
 		server.stop(0);
@@ -91,6 +96,7 @@ class KeycloakTestServer implements AutoCloseable {
 	private void handleResource(final HttpExchange exchange) throws IOException {
 		exchange.getRequestBody().readAllBytes();
 		resourceCalls.incrementAndGet();
+		receivedMethods.add(exchange.getRequestMethod());
 		String authorization = exchange.getRequestHeaders().getFirst("Authorization");
 		String token = authorization == null ? null : authorization.replaceFirst("^Bearer ", "");
 		receivedTokens.add(token);

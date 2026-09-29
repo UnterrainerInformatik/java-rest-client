@@ -84,7 +84,7 @@ public class RestClient {
 	}
 
 	String delPlain(final String url, final StringParam headers) throws IOException {
-		String r = call("DEL", url, headers, null, null, null);
+		String r = call("DELETE", url, headers, null, null, null);
 		return r;
 	}
 
@@ -133,8 +133,20 @@ public class RestClient {
 			requestBody = RequestBody.create(binary, MediaType.parse(mt));
 
 		Builder request = new Request.Builder();
-		if (method.equalsIgnoreCase("POST") || method.equalsIgnoreCase("PUT"))
-			request.method(method, requestBody);
+		switch (method) {
+			case "GET":
+				request.get();
+				break;
+			case "DELETE":
+				request.delete();
+				break;
+			case "POST":
+			case "PUT":
+				request.method(method, requestBody);
+				break;
+			default:
+				throw new IllegalArgumentException(String.format("Unsupported HTTP method %s.", method));
+		}
 
 		if (headers != null)
 			request.headers(Headers.of(headers.getParameters()));
