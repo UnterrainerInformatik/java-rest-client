@@ -1,0 +1,15 @@
+# Project Memory
+- [User profile](user_profile.md) — Gerald; German in chat, English in the repo; licensed electrician; wants evidence over guesswork
+- [Announce and explain code changes before making them](feedback_announce_changes_first.md) — A diagnosis request means diagnose only; describe intended edits and wait
+- [No changes outside an opsx:propose](feedback_openspec_only_changes.md) — Every change goes through OpenSpec; implementation via /opsx:apply
+- [Clear between OpenSpec phases](feedback_clear_between_opsx_phases.md) — Pause after plan, propose, apply and before archive+commit so Gerald can /clear
+- [Check open-proposals when asked what to do](feedback_check_open_proposals.md) — Read ./ai/open-proposals.md first; delete an entry once it becomes an opsx change
+- [Chat language is German](feedback_conversation_language_german.md) — Replies in German from the first message; repo content stays English
+- [Repo content in English only](feedback_english_only.md) — Identifiers, comments, Javadoc, logs, docs, commits: English
+- [Tests are welcome, offline](feedback_tests_welcome.md) — Write tests freely; automated ones use a local HttpServer; LAN tests are manual smoke tests and stay
+- [Run relevant tests before push](feedback_tests_before_push.md) — CI skips tests and publishes to Maven Central; a push is a release
+- [pom version forward](feedback_pom_version_forward.md) — Set <version> to what this push mints, before pushing; last release 1.0.10
+- [Evidence over speculation](feedback_evidence_over_speculation.md) — Add targeted diagnostic logging and wait for a reproduction instead of theorising
+- [Build and test commands](reference_build_and_test.md) — JDK 21; which tests need the LAN; how CI builds
+- [Consumers](project_consumers.md) — data logger, overmind server, elite server; fix defects here, consumers only bump
+- [Committed staging password](project_committed_staging_password.md) — Password in KeycloakContextTests is LAN staging behind VPN; not a security issue
