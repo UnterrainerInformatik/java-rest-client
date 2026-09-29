@@ -2,7 +2,9 @@ package info.unterrainer.commons.restclient;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.function.Supplier;
 
+import info.unterrainer.commons.restclient.exceptions.RestClientException;
 import info.unterrainer.commons.restclient.exceptions.UnauthorizedException;
 import info.unterrainer.commons.restclient.jsons.TokenResponseJson;
 import lombok.Getter;
@@ -31,6 +33,46 @@ public class KeycloakContext {
 
 	public <T> PostKeycloakBuilder<T> post(final RestClient client, final Class<?> type) {
 		return new PostKeycloakBuilder<>(client, type, this);
+	}
+
+	/**
+	 * Discards the current token, so the next call made through this context
+	 * fetches a new one from keycloak.
+	 * <p>
+	 * A call made through one of this context's builders does this on its own
+	 * when the server answers 401. Use it when you learn about a refusal some
+	 * other way, for example from a call you built by hand with
+	 * {@code getAccessToken()}.
+	 */
+	public void invalidate() {
+		accessToken = null;
+		refreshToken = null;
+		refreshTimestamp = null;
+	}
+
+	/**
+	 * Runs a call with this context's token. If the server refuses it with 401,
+	 * the token is discarded, a new one is fetched and the call is made once more.
+	 * A second 401 reaches the caller.
+	 */
+	<T> T execute(final RestClient client, final BaseBuilder<T, ?> builder, final Supplier<T> call) {
+		authorize(client, builder);
+		try {
+			return call.get();
+		} catch (RestClientException e) {
+			if (e.getStatusCode() != 401)
+				throw e;
+			invalidate();
+			authorize(client, builder);
+			T result = call.get();
+			log.warn("Call to [{}] was refused with 401 and succeeded with a new token.", builder.joinedUrl());
+			return result;
+		}
+	}
+
+	private void authorize(final RestClient client, final BaseBuilder<?, ?> builder) {
+		update(client);
+		builder.addHeader("Authorization", "Bearer " + accessToken);
 	}
 
 	void update(final RestClient client) {

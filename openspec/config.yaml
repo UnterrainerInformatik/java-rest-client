@@ -1,0 +1,48 @@
+schema: spec-driven
+
+context: |
+  Public OSS Java library info.unterrainer.commons:rest-client, published to Maven Central
+  on every push to master (tests are skipped in CI). A REST client on OkHttp 3 with
+  Keycloak bearer-token support (KeycloakContext, Get/Post/Put/DelKeycloakBuilder).
+  Java 21, Maven, Lombok, JUnit 5. Consumers: java-cms-data-logger, java-overmind-server,
+  java-elite-server.
+  All repo content (code, comments, Javadoc, logs, docs, commits, OpenSpec artifacts) is English.
+
+rules:
+  proposal:
+    - State in the Impact section which consumers are affected and whether callers must change.
+    - Mark anything that changes existing caller-visible behaviour as BREAKING.
+  tasks:
+    - Include test tasks for every behaviour change; tests run offline against a local HttpServer.
+    - End with setting the pom version to the one the push will mint.
+
+# Project context (optional)
+# This is shown to AI when creating artifacts.
+# Add your tech stack, conventions, style guides, domain knowledge, etc.
+# Example:
+#   context: |
+#     Tech stack: TypeScript, React, Node.js
+#     We use conventional commits
+#     Domain: e-commerce platform
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always include a "Non-goals" section
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
+
+# Per-operation guidance (optional)
+# Add advisory guidance for how apply and archive work should be conducted.
+# This is separate from artifact rules above.
+# Example:
+#   operations:
+#     apply:
+#       guidance:
+#         - Keep test summaries concise
+#     archive:
+#       guidance:
+#         - Summarize the archive outcome before finishing

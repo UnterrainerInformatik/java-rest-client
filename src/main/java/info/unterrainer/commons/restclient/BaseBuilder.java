@@ -203,8 +203,7 @@ public abstract class BaseBuilder<T, R extends BaseBuilder<T, R>> {
 	public T execute() {
 		lastException = null;
 		Consumer<IOException> onError = e -> lastException = e;
-		String url = String.join("/",
-				this.url.stream().map(e -> cutLeadingTrailing("/", e)).collect(Collectors.toList()));
+		String url = joinedUrl();
 
 		String params = String.join("&",
 				parameters.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).collect(Collectors.toList()));
@@ -244,6 +243,13 @@ public abstract class BaseBuilder<T, R extends BaseBuilder<T, R>> {
 	 */
 	public IOException getLastException() {
 		return lastException;
+	}
+
+	/**
+	 * The URL parts joined by slashes, without the query parameters.
+	 */
+	String joinedUrl() {
+		return String.join("/", url.stream().map(e -> cutLeadingTrailing("/", e)).collect(Collectors.toList()));
 	}
 
 	@SuppressWarnings("unchecked")

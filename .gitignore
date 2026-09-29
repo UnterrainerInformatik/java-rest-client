@@ -32,3 +32,6 @@ src/main/java/info/unterrainer/commons/jreutils/Information.java
 src/main/java/info/unterrainer/commons/restclient/Information.java
 
 bin/
+
+# Claude-local, never shipped
+ai/secrets/
