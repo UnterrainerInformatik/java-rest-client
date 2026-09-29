@@ -17,4 +17,4 @@ another bump and release. Missed on 2026-09-24 in `java-mqtt-client` (pom `1.0.3
 
 **How to apply:** before pushing, `git fetch --tags; git tag --sort=-creatordate | head -1`,
 set `<version>` to what the bump makes of it (normally build number + 1), in the same commit
-as the change. Last release pushed 2026-09-29: `1.0.10` (commit dc7bd4e); next push mints `1.0.11`.
+as the change. Last release pushed 2026-09-29: `1.0.11` (change `stop-shipping-log4j2-config`); next push mints `1.0.12`.
