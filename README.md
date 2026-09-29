@@ -13,7 +13,8 @@ A REST-client that uses OK-HTTP3.
 
 A `KeycloakContext` fetches an access token from keycloak with the password grant and
 sends it as a bearer token on every call made through its builders
-(`kcc.get(client, Type.class)`, `kcc.post(client, Type.class)`). The token is reused until
+(`kcc.get(client, Type.class)`, `kcc.post(client, Type.class)`, `kcc.put(client, Type.class)`,
+`kcc.del(client, Type.class)`). The token is reused until
 the expiry keycloak reported for it has passed.
 
 ### When the server refuses the token

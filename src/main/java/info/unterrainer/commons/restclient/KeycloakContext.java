@@ -35,6 +35,14 @@ public class KeycloakContext {
 		return new PostKeycloakBuilder<>(client, type, this);
 	}
 
+	public <T> PutKeycloakBuilder<T> put(final RestClient client, final Class<?> type) {
+		return new PutKeycloakBuilder<>(client, type, this);
+	}
+
+	public <T> DelKeycloakBuilder<T> del(final RestClient client, final Class<?> type) {
+		return new DelKeycloakBuilder<>(client, type, this);
+	}
+
 	/**
 	 * Discards the current token, so the next call made through this context
 	 * fetches a new one from keycloak.

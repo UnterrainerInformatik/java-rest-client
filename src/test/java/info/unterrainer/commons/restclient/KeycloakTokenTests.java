@@ -129,10 +129,10 @@ public class KeycloakTokenTests {
 	}
 
 	enum Method {
-		GET((c, k) -> new GetKeycloakBuilder<MessageJson>(c, MessageJson.class, k)),
-		POST((c, k) -> new PostKeycloakBuilder<MessageJson>(c, MessageJson.class, k).body("{}")),
-		PUT((c, k) -> new PutKeycloakBuilder<MessageJson>(c, MessageJson.class, k).body("{}")),
-		DEL((c, k) -> new DelKeycloakBuilder<MessageJson>(c, MessageJson.class, k));
+		GET((c, k) -> k.<MessageJson>get(c, MessageJson.class)),
+		POST((c, k) -> k.<MessageJson>post(c, MessageJson.class).body("{}")),
+		PUT((c, k) -> k.<MessageJson>put(c, MessageJson.class).body("{}")),
+		DEL((c, k) -> k.<MessageJson>del(c, MessageJson.class));
 
 		private final BiFunction<RestClient, KeycloakContext, BaseBuilder<MessageJson, ?>> builder;
 

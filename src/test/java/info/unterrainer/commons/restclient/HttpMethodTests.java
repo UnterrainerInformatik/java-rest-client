@@ -43,10 +43,10 @@ public class HttpMethodTests {
 		PLAIN_POST("POST", (c, k) -> new PostBuilder<MessageJson>(c, MessageJson.class).body("{}")),
 		PLAIN_PUT("PUT", (c, k) -> new PutBuilder<MessageJson>(c, MessageJson.class).body("{}")),
 		PLAIN_DELETE("DELETE", (c, k) -> new DelBuilder<MessageJson>(c, MessageJson.class)),
-		KEYCLOAK_GET("GET", (c, k) -> new GetKeycloakBuilder<MessageJson>(c, MessageJson.class, k)),
-		KEYCLOAK_POST("POST", (c, k) -> new PostKeycloakBuilder<MessageJson>(c, MessageJson.class, k).body("{}")),
-		KEYCLOAK_PUT("PUT", (c, k) -> new PutKeycloakBuilder<MessageJson>(c, MessageJson.class, k).body("{}")),
-		KEYCLOAK_DELETE("DELETE", (c, k) -> new DelKeycloakBuilder<MessageJson>(c, MessageJson.class, k));
+		KEYCLOAK_GET("GET", (c, k) -> k.<MessageJson>get(c, MessageJson.class)),
+		KEYCLOAK_POST("POST", (c, k) -> k.<MessageJson>post(c, MessageJson.class).body("{}")),
+		KEYCLOAK_PUT("PUT", (c, k) -> k.<MessageJson>put(c, MessageJson.class).body("{}")),
+		KEYCLOAK_DELETE("DELETE", (c, k) -> k.<MessageJson>del(c, MessageJson.class));
 
 		private final String method;
 		private final BiFunction<RestClient, KeycloakContext, BaseBuilder<MessageJson, ?>> builder;
@@ -79,7 +79,7 @@ public class HttpMethodTests {
 	public void deleteRepeatedAfterARefusedTokenIsStillADelete() {
 		server.refuse("token-1");
 
-		MessageJson response = new DelKeycloakBuilder<MessageJson>(restClient, MessageJson.class, kcc)
+		MessageJson response = kcc.<MessageJson>del(restClient, MessageJson.class)
 				.addUrl(server.resourceUrl())
 				.execute();
 
