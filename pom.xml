@@ -10,7 +10,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>rest-client</artifactId>
-	<version>1.0.9</version>
+	<version>1.0.10</version>
 	<name>RestClient</name>
 	<packaging>jar</packaging>
 
@@ -44,4 +44,23 @@
 			<version>3.0</version>
 		</dependency>
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>analyze</id>
+						<configuration>
+							<ignoredNonTestScopedDependencies>
+								<ignoredNonTestScopedDependency>org.apache.logging.log4j:log4j-api</ignoredNonTestScopedDependency>
+								<ignoredNonTestScopedDependency>org.apache.logging.log4j:log4j-core</ignoredNonTestScopedDependency>
+							</ignoredNonTestScopedDependencies>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>
