@@ -9,7 +9,7 @@
 ## 3. Verification
 
 - [x] 3.1 Run the offline tests (`KeycloakTokenTests,LastExceptionTests,HttpMethodTests,PackagingTests,RestClientExceptionTests`) on JDK 21 and verify all pass with a non-zero test count (no library code changes; this guards the release this push mints)
-- [ ] 3.2 After the release push, verify on GitHub Actions that the next push changing only files under `ai/` or `openspec/` starts no PIPELINE run (manual check; covers the spec scenarios that cannot run offline)
+- [x] 3.2 After the release push, verify on GitHub Actions that the next push changing only files under `ai/` or `openspec/` starts no PIPELINE run (manual check; covers the spec scenarios that cannot run offline)
 
 ## 4. Release
 
