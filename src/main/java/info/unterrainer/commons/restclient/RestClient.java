@@ -27,6 +27,7 @@ import okhttp3.Request;
 import okhttp3.Request.Builder;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 @Slf4j
 @Accessors(fluent = true)
@@ -100,7 +101,26 @@ public class RestClient {
 		return r;
 	}
 
+	/**
+	 * Makes a GET call and returns the body of its answer as it was received,
+	 * without decoding it as text. An empty body gives an empty array.
+	 */
+	byte[] getBytes(final String url, final StringParam headers) throws IOException {
+		Response response = send("GET", url, headers, null, null, null);
+		try (ResponseBody responseBody = response.body()) {
+			return responseBody.bytes();
+		}
+	}
+
 	private String call(final String method, final String url, final StringParam headers, final String mediaType,
+			final String body, final byte[] binary) throws IOException {
+		Response response = send(method, url, headers, mediaType, body, binary);
+		String r = response.body().string();
+		response.body().close();
+		return r == null ? "" : r;
+	}
+
+	private Response send(final String method, final String url, final StringParam headers, final String mediaType,
 			final String body, final byte[] binary) throws IOException {
 		Call call = getCall(method, url, headers, mediaType, body, binary);
 		Response response = call.execute();
@@ -112,9 +132,7 @@ public class RestClient {
 		}
 
 		log.debug("HTTP call to url [{}] succeeded with [{}]", url, response.code());
-		String r = response.body().string();
-		response.body().close();
-		return r == null ? "" : r;
+		return response;
 	}
 
 	private Call getCall(final String method, final String url, final StringParam headers, final String mediaType,
@@ -154,6 +172,17 @@ public class RestClient {
 		return client.newCall(request.url(url).build());
 	}
 
+	/**
+	 * Builds a GET call whose answer is converted into {@code type}.
+	 * <p>
+	 * For {@code byte[].class} the body is returned exactly as it was received,
+	 * without decoding it as text (an empty body gives an empty array). Every other
+	 * type is decoded from the body as text.
+	 *
+	 * @param <T>  the type the answer is converted into
+	 * @param type the class of {@code T}
+	 * @return a {@link GetBuilder} to provide a fluent interface.
+	 */
 	public <T> GetBuilder<T> get(final Class<?> type) {
 		return new GetBuilder<>(this, type);
 	}

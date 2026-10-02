@@ -69,9 +69,11 @@ public class GzipInterceptor implements Interceptor {
 			return response;
 
 		GzipSource gzipSource = new GzipSource(response.body().source());
-		String bodyString = Okio.buffer(gzipSource).readUtf8();
+		// Unpack as bytes: decoding here would corrupt a binary body. Text is decoded
+		// later, with the charset of the content type.
+		byte[] bytes = Okio.buffer(gzipSource).readByteArray();
 
-		ResponseBody responseBody = ResponseBody.create(bodyString, response.body().contentType());
+		ResponseBody responseBody = ResponseBody.create(bytes, response.body().contentType());
 
 		Headers strippedHeaders = response.headers()
 				.newBuilder()

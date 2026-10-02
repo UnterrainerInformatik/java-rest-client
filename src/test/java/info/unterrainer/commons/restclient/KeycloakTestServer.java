@@ -1,5 +1,6 @@
 package info.unterrainer.commons.restclient;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -13,6 +14,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.zip.GZIPOutputStream;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
@@ -25,6 +27,10 @@ import com.sun.net.httpserver.HttpServer;
  * {@code token-2}, …) and counts the grants. The resource endpoint records the
  * method and token of every call and answers 401 for every token in the refused
  * set, a fixed status if one is set, and 200 with a JSON body otherwise.
+ * <p>
+ * The binary endpoint answers with settable bytes, honours the refused set like
+ * the resource endpoint and compresses its answer with gzip if asked to and if
+ * the request accepts it.
  * <p>
  * Exchanges are handled on a thread pool, so concurrent calls really overlap.
  * The token endpoint can be slowed down, and it records the highest number of
@@ -48,11 +54,15 @@ class KeycloakTestServer implements AutoCloseable {
 	private volatile long expiresIn = 300;
 	private volatile long tokenDelayMillis;
 	private volatile CountDownLatch refusalGate;
+	private volatile byte[] binaryBody = new byte[0];
+	private volatile String binaryContentType = "application/octet-stream";
+	private volatile boolean compressBinary;
 
 	KeycloakTestServer() throws IOException {
 		server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
 		server.createContext("/token", this::handleToken);
 		server.createContext("/resource", this::handleResource);
+		server.createContext("/binary", this::handleBinary);
 		server.setExecutor(executor);
 		server.start();
 	}
@@ -63,6 +73,26 @@ class KeycloakTestServer implements AutoCloseable {
 
 	String resourceUrl() {
 		return baseUrl() + "/resource";
+	}
+
+	String binaryUrl() {
+		return baseUrl() + "/binary";
+	}
+
+	/**
+	 * Sets the body and content type the binary endpoint answers with.
+	 */
+	void binaryBody(final byte[] body, final String contentType) {
+		binaryBody = body.clone();
+		binaryContentType = contentType;
+	}
+
+	/**
+	 * Makes the binary endpoint compress its answer with gzip whenever the request
+	 * accepts it.
+	 */
+	void compressBinary() {
+		compressBinary = true;
 	}
 
 	KeycloakContext context() {
@@ -184,6 +214,39 @@ class KeycloakTestServer implements AutoCloseable {
 			respond(exchange, fixedStatus, "");
 		else
 			respond(exchange, 200, OK_BODY);
+	}
+
+	private void handleBinary(final HttpExchange exchange) throws IOException {
+		exchange.getRequestBody().readAllBytes();
+		resourceCalls.incrementAndGet();
+		receivedMethods.add(exchange.getRequestMethod());
+		String authorization = exchange.getRequestHeaders().getFirst("Authorization");
+		String token = authorization == null ? null : authorization.replaceFirst("^Bearer ", "");
+		receivedTokens.add(token);
+
+		if (token != null && refusedTokens.contains(token)) {
+			respond(exchange, 401, "");
+			return;
+		}
+		if (fixedStatus != 0) {
+			respond(exchange, fixedStatus, "");
+			return;
+		}
+		byte[] bytes = binaryBody;
+		String acceptEncoding = exchange.getRequestHeaders().getFirst("Accept-Encoding");
+		if (compressBinary && acceptEncoding != null && acceptEncoding.contains("gzip")) {
+			ByteArrayOutputStream zipped = new ByteArrayOutputStream();
+			try (GZIPOutputStream gzip = new GZIPOutputStream(zipped)) {
+				gzip.write(bytes);
+			}
+			bytes = zipped.toByteArray();
+			exchange.getResponseHeaders().add("Content-Encoding", "gzip");
+		}
+		exchange.getResponseHeaders().add("Content-Type", binaryContentType);
+		exchange.sendResponseHeaders(200, bytes.length == 0 ? -1 : bytes.length);
+		try (OutputStream out = exchange.getResponseBody()) {
+			out.write(bytes);
+		}
 	}
 
 	private void awaitRefusalGate() {

@@ -15,6 +15,8 @@ public class BaseGetBuilder<T, R> extends BaseBuilder<T, BaseGetBuilder<T, R>> {
 	@SuppressWarnings("unchecked")
 	@Override
 	protected HttpGetCall<T> provideCall(final String url, final Class<T> type, final Map<String, String> headers) {
+		if (byte[].class.equals(type))
+			return client -> (T) client.getBytes(url, StringParam.builder().parameters(headers).build());
 		return client -> {
 			String r = client.getPlain(url, StringParam.builder().parameters(headers).build());
 			return (T) castTo(client.jsonMapper, r);

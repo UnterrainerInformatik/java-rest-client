@@ -9,6 +9,9 @@ package info.unterrainer.commons.restclient;
  * {@link info.unterrainer.commons.restclient.exceptions.RestClientException}
  * with status {@code 401}. Any other status is not repeated. See also
  * {@link KeycloakContext#invalidate()}.
+ * <p>
+ * For {@code byte[].class} the answer's body is returned exactly as it was
+ * received, also when the call was repeated after a 401.
  *
  * @param <T> the type the answer is deserialized into
  */

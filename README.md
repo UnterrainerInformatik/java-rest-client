@@ -9,6 +9,22 @@
 
 A REST-client that uses OK-HTTP3.
 
+## Binary answers
+
+A GET for `byte[]` returns the body exactly as the server sent it, without decoding it as
+text, so certificates, keys or any `application/octet-stream` arrive byte for byte. An
+empty body gives an empty array. This works the same through a `KeycloakContext`,
+including a call repeated after a 401:
+
+```java
+byte[] content = kcc.<byte[]>get(restClient, byte[].class)
+        .addUrl(server).addUrl("fileblobs/download").addParam("id", "4711").execute();
+```
+
+Every other type is decoded from the body as text, as before. A non-2xx answer raises a
+`RestClientException` with its status; a transport failure answers `null` and is reported
+by `getLastException()`. A gzip-compressed answer is unpacked without changing its bytes.
+
 ## Keycloak
 
 A `KeycloakContext` fetches an access token from keycloak with the password grant and
