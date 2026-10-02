@@ -14,8 +14,19 @@ A REST-client that uses OK-HTTP3.
 A `KeycloakContext` fetches an access token from keycloak with the password grant and
 sends it as a bearer token on every call made through its builders
 (`kcc.get(client, Type.class)`, `kcc.post(client, Type.class)`, `kcc.put(client, Type.class)`,
-`kcc.del(client, Type.class)`). The token is reused until
-the expiry keycloak reported for it has passed.
+`kcc.del(client, Type.class)`). The token is reused until shortly before the expiry
+keycloak reported for it: once less than 30 seconds of its lifetime are left (or less than
+half of it, for tokens that live shorter than a minute), the next call fetches a new one
+first. A token is therefore never sent in its last seconds. `kcc.getRefreshTimestamp()`
+still returns the expiry keycloak reported.
+
+### Sharing a context between threads
+
+A `KeycloakContext` is safe to use from several threads at once. Threads that need a new
+token at the same time wait for a single fetch and all send the token it returned. When a
+call is refused with 401, the context discards the token only if it still holds the one
+that call sent; if another thread has already replaced it, the newer token is kept and the
+call is repeated with it.
 
 ### When the server refuses the token
 

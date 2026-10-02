@@ -5,8 +5,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
 
 import org.apache.logging.log4j.Level;
@@ -35,6 +43,10 @@ import info.unterrainer.commons.serialization.jsonmapper.JsonMapper;
  */
 public class KeycloakTokenTests {
 
+	private static final long START = 1_000_000L;
+	private static final int THREADS = 8;
+
+	private final AtomicLong clock = new AtomicLong(START);
 	private KeycloakTestServer server;
 	private RestClient restClient;
 	private KeycloakContext kcc;
@@ -45,6 +57,7 @@ public class KeycloakTokenTests {
 		server = new KeycloakTestServer();
 		restClient = new RestClient(JsonMapper.create(), 2000L, 2000L, 2000L);
 		kcc = server.context();
+		kcc.clock = clock::get;
 		warnings = WarningCapture.attach();
 	}
 
@@ -126,6 +139,134 @@ public class KeycloakTokenTests {
 
 		assertEquals(2, server.grants());
 		assertEquals(List.of("token-1", "token-2"), server.receivedTokens());
+	}
+
+	@Test
+	public void tokenCloseToItsExpiryIsRenewedBeforeItIsSent() {
+		get();
+
+		clock.set(START + 271_000L);
+		MessageJson response = get();
+
+		assertEquals("ok", response.getMessage());
+		assertEquals(2, server.grants(), "a token inside its 30 s renewal margin must be replaced before the call");
+		assertEquals(List.of("token-1", "token-2"), server.receivedTokens());
+		assertEquals(2, server.resourceCalls(), "the renewed call must not be refused and repeated");
+		assertEquals(START + 271_000L + 300_000L, kcc.getRefreshTimestamp(),
+				"the refresh timestamp must still be the expiry keycloak reported");
+	}
+
+	@Test
+	public void shortLivedTokenIsReusedWithinHalfItsLifetime() {
+		server.expiresIn(2);
+		get();
+
+		clock.set(START + 900L);
+		get();
+
+		assertEquals(1, server.grants());
+		assertEquals(List.of("token-1", "token-1"), server.receivedTokens());
+	}
+
+	@Test
+	public void shortLivedTokenIsRenewedAtHalfItsLifetime() {
+		server.expiresIn(2);
+		get();
+
+		clock.set(START + 1_100L);
+		get();
+
+		assertEquals(2, server.grants(), "a 2 s token must be renewed once less than 1 s of it is left");
+		assertEquals(List.of("token-1", "token-2"), server.receivedTokens());
+	}
+
+	@Test
+	public void simultaneousFirstCallsFetchOneToken() throws Exception {
+		server.delayTokens(200);
+
+		List<MessageJson> responses = getConcurrently();
+
+		assertEquals(THREADS, responses.size());
+		assertEquals(1, server.grants(), "threads that need a token at the same time must share one fetch");
+		assertEquals(1, server.maxGrantsInFlight());
+		assertEquals(Collections.nCopies(THREADS, "token-1"), server.receivedTokens());
+	}
+
+	@Test
+	public void simultaneousRefusalsFetchOneNewToken() throws Exception {
+		kcc.update(restClient);
+		server.refuse("token-1");
+		server.holdRefusals();
+		server.delayTokens(200);
+
+		List<Future<MessageJson>> futures = startConcurrently();
+		server.awaitResourceCalls(THREADS);
+		server.releaseRefusals();
+		List<MessageJson> responses = collect(futures);
+
+		responses.forEach(r -> assertEquals("ok", r.getMessage()));
+		assertEquals(2, server.grants(), "one refused token must be replaced once, not once per thread");
+		List<String> tokens = server.receivedTokens();
+		assertEquals(Collections.nCopies(THREADS, "token-1"), tokens.subList(0, THREADS));
+		assertEquals(Collections.nCopies(THREADS, "token-2"), tokens.subList(THREADS, tokens.size()));
+	}
+
+	@Test
+	public void lateRefusalDoesNotDiscardANewerToken() throws Exception {
+		server.refuse("token-1");
+		server.holdRefusals();
+		ExecutorService executor = Executors.newSingleThreadExecutor();
+		try {
+			Future<MessageJson> late = executor.submit(this::get);
+			server.awaitResourceCalls(1);
+
+			kcc.invalidate();
+			get();
+			server.releaseRefusals();
+
+			assertEquals("ok", late.get(10, TimeUnit.SECONDS).getMessage());
+		} finally {
+			executor.shutdownNow();
+		}
+
+		assertEquals(2, server.grants(), "a refusal of a token that was already replaced must not discard its successor");
+		assertEquals(List.of("token-1", "token-2", "token-2"), server.receivedTokens());
+		assertEquals("token-2", kcc.getAccessToken());
+	}
+
+	private MessageJson get() {
+		return kcc.<MessageJson>get(restClient, MessageJson.class).addUrl(server.resourceUrl()).execute();
+	}
+
+	private List<MessageJson> getConcurrently() throws Exception {
+		return collect(startConcurrently());
+	}
+
+	/**
+	 * Starts {@value #THREADS} calls that are released together by a latch.
+	 */
+	private List<Future<MessageJson>> startConcurrently() throws InterruptedException {
+		ExecutorService executor = Executors.newFixedThreadPool(THREADS);
+		CountDownLatch ready = new CountDownLatch(THREADS);
+		CountDownLatch go = new CountDownLatch(1);
+		List<Future<MessageJson>> futures = new ArrayList<>();
+		for (int i = 0; i < THREADS; i++)
+			futures.add(executor.submit(() -> {
+				ready.countDown();
+				go.await();
+				return get();
+			}));
+		executor.shutdown();
+		ready.await(10, TimeUnit.SECONDS);
+		go.countDown();
+		return futures;
+	}
+
+	private List<MessageJson> collect(final List<Future<MessageJson>> futures) throws Exception {
+		List<MessageJson> responses = new ArrayList<>();
+		for (Future<MessageJson> future : futures)
+			responses.add(future.get(10, TimeUnit.SECONDS));
+		return responses;
 	}
 
 	enum Method {
