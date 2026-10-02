@@ -7,8 +7,8 @@
 - [Chat language is German](feedback_conversation_language_german.md) — Replies in German from the first message; repo content stays English
 - [Repo content in English only](feedback_english_only.md) — Identifiers, comments, Javadoc, logs, docs, commits: English
 - [Tests are welcome, offline](feedback_tests_welcome.md) — Write tests freely; automated ones use a local HttpServer; LAN tests are manual smoke tests and stay
-- [Run relevant tests before push](feedback_tests_before_push.md) — CI skips tests and publishes to Maven Central; a push is a release
-- [pom version forward](feedback_pom_version_forward.md) — Set <version> to what this push mints, before pushing; last release 1.0.11
+- [Run relevant tests before push](feedback_tests_before_push.md) — CI skips tests and publishes to Maven Central; a push is a release (unless it only touches ai/, openspec/, .claude/)
+- [pom version forward](feedback_pom_version_forward.md) — Set <version> to what this push mints, before pushing; last release 1.0.12
 - [Evidence over speculation](feedback_evidence_over_speculation.md) — Add targeted diagnostic logging and wait for a reproduction instead of theorising
 - [Build and test commands](reference_build_and_test.md) — JDK 21; which tests need the LAN; how CI builds
 - [Consumers](project_consumers.md) — data logger, overmind server, elite server; fix defects here, consumers only bump

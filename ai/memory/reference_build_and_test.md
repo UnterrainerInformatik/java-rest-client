@@ -17,6 +17,10 @@ metadata:
   `KeycloakTokenTests` uses log4j types; fixed 2026-09-29 via `ignoredNonTestScopedDependencies`
   in `pom.xml` (change `ignore-log4j-test-only-analyze`). `mvn -DskipTests verify` on JDK 21 is green.
   Note: `analyze-only` binds to `verify`, so the CI `package` path never runs it.
+- **Internal-only pushes do not release.** `pipeline.yml` has `paths-ignore` for `ai/**`,
+  `openspec/**`, `.claude/**` on the push trigger: a push touching only those starts no run,
+  bumps nothing, tags nothing. Any other file in the push (incl. `README.md`, the workflow)
+  releases as before. `workflow_dispatch` always releases (change `skip-release-for-internal-pushes`).
 - **Surefire is not pinned.** In `java-cms-data-logger` the runner's older Maven picked
   surefire 2.12.4 and ran zero JUnit 5 tests with `BUILD SUCCESS`. CI skips tests here, so
   it doesn't bite yet, but a green run is only real if the report shows a test count.

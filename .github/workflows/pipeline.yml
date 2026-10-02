@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - 'master'
+    paths-ignore:
+      - 'ai/**'
+      - 'openspec/**'
+      - '.claude/**'
   workflow_dispatch:
 
 jobs:

@@ -17,4 +17,8 @@ another bump and release. Missed on 2026-09-24 in `java-mqtt-client` (pom `1.0.3
 
 **How to apply:** before pushing, `git fetch --tags; git tag --sort=-creatordate | head -1`,
 set `<version>` to what the bump makes of it (normally build number + 1), in the same commit
-as the change. Last release pushed 2026-09-29: `1.0.11` (change `stop-shipping-log4j2-config`); next push mints `1.0.12`.
+as the change. Last release pushed 2026-10-02: `1.0.12` (change `keycloak-renew-token-before-expiry`); next push mints `1.0.13`.
+
+A push touching only `ai/`, `openspec/`, `.claude/` does not release and mints no version
+(`paths-ignore` in `pipeline.yml`), so leave `<version>` alone for such pushes; the next
+releasing push still mints last tag + 1.
